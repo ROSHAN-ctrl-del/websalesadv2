@@ -35,7 +35,7 @@ function App() {
           <div className="min-h-screen bg-gray-50">
             <Routes>
               {/* Default redirect */}
-              <Route path="/" element={<Navigate to="/super-admin/login" />} />
+              <Route path="/" element={<Navigate to="/super-admin/login" replace />} />
               
               {/* Authentication Routes */}
               <Route path="/super-admin/login" element={<SuperAdminLogin />} />
@@ -72,6 +72,9 @@ function App() {
               } />
               
               {/* Sales Admin Routes */}
+              <Route path="/sales-admin" element={
+                <Navigate to="/sales-admin/dashboard" replace />
+              } />
               <Route path="/sales-admin/dashboard" element={
                 <ProtectedRoute role="sales_admin">
                   <SalesAdminDashboard />
@@ -97,6 +100,9 @@ function App() {
                   <SalesAdminManageTasks />
                 </ProtectedRoute>
               } />
+
+              {/* Catch all route */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
             <Toaster 
               position="top-right"
@@ -105,6 +111,16 @@ function App() {
                 style: {
                   background: '#363636',
                   color: '#fff',
+                },
+                success: {
+                  style: {
+                    background: '#10B981',
+                  },
+                },
+                error: {
+                  style: {
+                    background: '#EF4444',
+                  },
                 },
               }}
             />

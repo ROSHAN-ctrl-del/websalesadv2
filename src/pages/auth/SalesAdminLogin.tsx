@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Eye, EyeOff, Users, ArrowRight } from 'lucide-react';
@@ -9,35 +9,36 @@ const SalesAdminLogin = () => {
   const [password, setPassword] = useState('sales123');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      if (user.role === 'sales_admin') {
+        navigate('/sales-admin/dashboard', { replace: true });
+      } else if (user.role === 'super_admin') {
+        navigate('/super-admin/dashboard', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
     try {
-      // Call login and get user info from localStorage (set by AuthContext)
       await login(email, password, 'sales_admin');
-      const userStr = localStorage.getItem('user');
-      let user = null;
-      if (userStr) {
-        try { user = JSON.parse(userStr); } catch {}
-      }
-      // Fallback: get user from AuthContext if available
-      if (!user && typeof window !== 'undefined') {
-        user = JSON.parse(window.localStorage.getItem('user') || 'null');
-      }
-      // Navigate based on user role
-      if (user && user.role === 'sales_admin') {
-        navigate('/sales-admin/dashboard');
-      } else if (user && user.role === 'super_admin') {
-        navigate('/super-admin/dashboard');
-      } else {
-        // Unknown role, fallback
-        navigate('/');
-      }
+      
+      // Navigation will be handled by the useEffect above
+      // But we can also navigate here as a fallback
+      setTimeout(() => {
+        navigate('/sales-admin/dashboard', { replace: true });
+      }, 100);
+      
     } catch (error) {
       console.error('Login failed:', error);
+      // Error handling is done in the AuthContext
     } finally {
       setLoading(false);
     }
@@ -81,6 +82,7 @@ const SalesAdminLogin = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -96,12 +98,14 @@ const SalesAdminLogin = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-1.5 pr-8 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute inset-y-0 right-0 pr-2.5 flex items-center text-gray-500 hover:text-gray-700"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  disabled={loading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />

@@ -28,76 +28,135 @@ const users = [
 // Login (supports MongoDB sales admins)
 router.post('/login', async (req, res) => {
   try {
+    console.log('Login request received:', { 
+      email: req.body.email, 
+      role: req.body.role,
+      hasPassword: !!req.body.password 
+    });
 
-    // Debug: log incoming request body for troubleshooting
-    console.log('Login request body:', req.body);
     const { email, password, role } = req.body;
 
     // Validate required fields
     if (!email || !password || !role) {
-      return res.status(400).json({ message: 'Missing required fields: email, password, and role are required.', received: req.body });
+      console.log('Missing required fields:', { email: !!email, password: !!password, role: !!role });
+      return res.status(400).json({ 
+        message: 'Missing required fields: email, password, and role are required.',
+        error: 'validation_error'
+      });
     }
 
+    let user = null;
+    let isValidPassword = false;
+
     if (role === 'sales_admin') {
-      // Try MongoDB for sales admin
+      // Try MongoDB for sales admin first
       try {
         const SalesAdmin = (await import('../models/SalesAdmin.js')).default;
-        const admin = await SalesAdmin.findOne({ email });
+        const admin = await SalesAdmin.findOne({ email, status: 'active' });
+        
         if (admin) {
-          const isValidPassword = await bcrypt.compare(password, admin.password);
-          if (!isValidPassword) {
-            return res.status(401).json({ message: 'Invalid credentials' });
+          console.log('Found sales admin in MongoDB:', admin.email);
+          isValidPassword = await bcrypt.compare(password, admin.password);
+          
+          if (isValidPassword) {
+            user = {
+              id: admin._id.toString(),
+              email: admin.email,
+              name: admin.name,
+              role: 'sales_admin',
+              isActive: admin.status === 'active'
+            };
+            
+            // Update last login
+            admin.lastLogin = new Date();
+            await admin.save();
           }
-          // Generate JWT
-          const token = jwt.sign(
-            { id: admin._id, email: admin.email, role: 'sales_admin' },
-            JWT_SECRET,
-            { expiresIn: '24h' }
-          );
-          const { password: _, ...adminWithoutPassword } = admin.toObject();
-          return res.json({
-            user: adminWithoutPassword,
-            token,
-          });
         }
-        // If admin not found in MongoDB, fall through to demo user fallback below
       } catch (mongoError) {
-        // fallback to demo user if MongoDB fails
+        console.log('MongoDB lookup failed, falling back to demo user:', mongoError.message);
       }
     }
 
-    // Fallback to demo users for super_admin and sales_admin
-    const user = users.find(u => u.email === email && u.role === role);
+    // Fallback to demo users if not found in MongoDB
     if (!user) {
+      console.log('Looking for demo user with email:', email, 'and role:', role);
+      const demoUser = users.find(u => u.email === email && u.role === role);
+      
+      if (demoUser) {
+        console.log('Found demo user:', demoUser.email);
+        isValidPassword = await bcrypt.compare(password, demoUser.password);
+        
+        if (isValidPassword) {
+          user = {
+            id: demoUser.id,
+            email: demoUser.email,
+            name: demoUser.name,
+            role: demoUser.role,
+            isActive: demoUser.isActive
+          };
+        }
+      }
+    }
+
+    // Check if user was found and password is valid
+    if (!user) {
+      console.log('User not found for email:', email, 'role:', role);
       return res.status(401).json({ 
-        message: 'Invalid credentials',
-        reason: 'No user found for provided email and role',
-        received: { email, role }
+        message: 'Invalid credentials. Please check your email and role.',
+        error: 'user_not_found'
       });
     }
-    // Check password using bcrypt for demo users
-    const isValidPassword = await bcrypt.compare(password, user.password);
+
     if (!isValidPassword) {
+      console.log('Invalid password for user:', email);
       return res.status(401).json({ 
-        message: 'Invalid credentials',
-        reason: 'Password mismatch',
-        received: { email, role }
+        message: 'Invalid credentials. Please check your password.',
+        error: 'invalid_password'
       });
     }
-    // Generate JWT
+
+    // Check if user is active
+    if (!user.isActive) {
+      console.log('User account is inactive:', email);
+      return res.status(401).json({ 
+        message: 'Your account has been deactivated. Please contact an administrator.',
+        error: 'account_inactive'
+      });
+    }
+
+    // Generate JWT token
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { 
+        id: user.id, 
+        email: user.email, 
+        role: user.role,
+        name: user.name
+      },
       JWT_SECRET,
       { expiresIn: '24h' }
     );
-    const { password: _, ...userWithoutPassword } = user;
+
+    console.log('Login successful for:', user.email, 'role:', user.role);
+
+    // Return success response
     res.json({
-      user: userWithoutPassword,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        isActive: user.isActive
+      },
       token,
+      message: 'Login successful'
     });
+
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    res.status(500).json({ 
+      message: 'Internal server error during login',
+      error: 'server_error'
+    });
   }
 });
 
@@ -110,6 +169,23 @@ router.post('/logout', (req, res) => {
 router.post('/refresh', (req, res) => {
   // In a real app, you'd validate the refresh token
   res.json({ message: 'Token refreshed' });
+});
+
+// Verify token endpoint
+router.get('/verify', (req, res) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ user: decoded, valid: true });
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token', valid: false });
+  }
 });
 
 export default router;
