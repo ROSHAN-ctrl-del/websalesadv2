@@ -15,6 +15,10 @@ import {
   UserCheck,
   ShoppingCart,
   ListTodo,
+  Trash2,
+  CheckCircle,
+  Wifi,
+  WifiOff,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,15 +28,11 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { user, logout } = useAuth();
-  // Safely get socket context with default empty notifications
-  const socketContext = useSocket();
-  const notifications = socketContext?.notifications || [];
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, isConnected } = useSocket();
   const location = useLocation();
   const navigate = useNavigate();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   const superAdminNavItems = [
     { path: '/super-admin/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -50,7 +50,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { path: '/sales-admin/reports', icon: BarChart3, label: 'Reports' },
   ];
 
-  // Ensure we always have a default set of navigation items
   const getNavItems = () => {
     if (!user) return [];
     return user.role === 'super_admin' ? superAdminNavItems : salesAdminNavItems;
@@ -61,6 +60,30 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const handleLogout = () => {
     logout();
     navigate(`/${user?.role?.replace('_', '-')}/login`);
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    
+    // Handle navigation based on notification type
+    if (notification.type === 'task_assigned' || notification.type === 'task_updated') {
+      if (notification.data?.taskId) {
+        navigate('/sales-admin/manage-tasks');
+      }
+    }
+  };
+
+  const formatNotificationTime = (timestamp: string) => {
+    const now = new Date();
+    const notificationTime = new Date(timestamp);
+    const diffInMinutes = Math.floor((now.getTime() - notificationTime.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)}h ago`;
+    return `${Math.floor(diffInMinutes / 1440)}d ago`;
   };
 
   return (
@@ -91,11 +114,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-2xl font-bold">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
-              <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+              <div className={`absolute bottom-0 right-0 w-4 h-4 rounded-full border-2 border-white ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
             </div>
             <h3 className="font-semibold text-gray-800">{user?.name || 'User'}</h3>
             <p className="text-sm text-gray-500">{user?.email || 'user@example.com'}</p>
+            <div className="flex items-center mt-1 text-xs text-gray-400">
+              {isConnected ? <Wifi className="h-3 w-3 mr-1" /> : <WifiOff className="h-3 w-3 mr-1" />}
+              {isConnected ? 'Connected' : 'Disconnected'}
+            </div>
           </motion.div>
+          
           <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -151,17 +179,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {/* Profile Section */}
               <div className="p-4 border-b border-gray-100 bg-gray-50">
                 <div className="flex items-center space-x-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="relative">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-medium">
-                        {user?.name?.charAt(0).toUpperCase() || 'U'}
-                      </div>
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="relative">
+                    <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white font-medium">
+                      {user?.name?.charAt(0).toUpperCase() || 'U'}
                     </div>
-                    <div className="hidden md:block">
-                      <p className="text-sm font-medium text-gray-700">{user?.name || 'User'}</p>
-                      <p className="text-xs text-gray-500">{user?.email?.split('@')[0] || 'user'}</p>
-                    </div>
+                    <div className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-800">{user?.name || 'User'}</h3>
@@ -236,7 +258,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       animate={{ scale: 1 }}
                       className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center"
                     >
-                      {unreadCount}
+                      {unreadCount > 99 ? '99+' : unreadCount}
                     </motion.span>
                   )}
                 </motion.button>
@@ -247,33 +269,72 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 20 }}
-                      className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50"
+                      className="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 py-1 z-50 max-h-96 overflow-hidden"
                     >
-                      <div className="px-4 py-2 border-b">
+                      <div className="px-4 py-2 border-b flex items-center justify-between">
                         <h3 className="text-lg font-medium text-gray-900">Notifications</h3>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-sm text-blue-600 hover:text-blue-800"
+                          >
+                            Mark all read
+                          </button>
+                        )}
                       </div>
-                      <div className="max-h-96 overflow-y-auto">
+                      <div className="max-h-80 overflow-y-auto">
                         {notifications.length > 0 ? (
-                          notifications.map((notification) => (
+                          notifications.slice(0, 10).map((notification) => (
                             <div
                               key={notification.id}
-                              className={`px-4 py-3 hover:bg-gray-50 cursor-pointer ${
+                              className={`px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0 ${
                                 !notification.read ? 'bg-blue-50' : ''
                               }`}
-                              onClick={() => {
-                                // Handle notification click
-                                setShowNotifications(false);
-                              }}
+                              onClick={() => handleNotificationClick(notification)}
                             >
-                              <p className="text-sm text-gray-900">{notification.message}</p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {new Date(notification.timestamp).toLocaleString()}
-                              </p>
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1 min-w-0">
+                                  <p className={`text-sm ${!notification.read ? 'font-semibold text-gray-900' : 'text-gray-700'}`}>
+                                    {notification.title}
+                                  </p>
+                                  <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                                    {notification.message}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {formatNotificationTime(notification.timestamp.toString())}
+                                  </p>
+                                </div>
+                                <div className="flex items-center space-x-1 ml-2">
+                                  {!notification.read && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        markAsRead(notification.id);
+                                      }}
+                                      className="p-1 text-blue-600 hover:text-blue-800"
+                                      title="Mark as read"
+                                    >
+                                      <CheckCircle className="h-4 w-4" />
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      deleteNotification(notification.id);
+                                    }}
+                                    className="p-1 text-red-600 hover:text-red-800"
+                                    title="Delete notification"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </div>
+                              </div>
                             </div>
                           ))
                         ) : (
-                          <div className="px-4 py-4 text-center text-sm text-gray-500">
-                            No new notifications
+                          <div className="px-4 py-8 text-center text-sm text-gray-500">
+                            <Bell className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                            No notifications yet
                           </div>
                         )}
                       </div>

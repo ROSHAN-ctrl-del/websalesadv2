@@ -15,6 +15,8 @@ import salesRoutes from './routes/sales.js';
 import reportsRoutes from './routes/reports.js';
 import customerRoutes from './routes/customers.js';
 import salesAdminRoutes from './routes/salesAdmins.js';
+import taskRoutes from './routes/tasks.js';
+import notificationRoutes from './routes/notifications.js';
 import apiRoutes from './routes/api/index.js';
 
 // Import middleware
@@ -74,6 +76,8 @@ app.use('/api/sales', authenticateToken, salesRoutes);
 app.use('/api/reports', authenticateToken, reportsRoutes);
 app.use('/api/customers', authenticateToken, customerRoutes);
 app.use('/api/sales-admins', authenticateToken, salesAdminRoutes);
+app.use('/api/tasks', authenticateToken, taskRoutes);
+app.use('/api/notifications', authenticateToken, notificationRoutes);
 
 // Socket.IO for real-time features
 io.use(authenticateSocket);
@@ -81,6 +85,8 @@ io.use(authenticateSocket);
 io.on('connection', (socket) => {
   console.log('User connected:', socket.user?.email);
   
+  // Join user-specific room
+  socket.join(`user_${socket.user.id}`);
   socket.join(`role_${socket.user?.role}`);
   
   // Handle real-time events
@@ -94,13 +100,21 @@ io.on('connection', (socket) => {
     }
   });
   
-  socket.on('order_status_update', (data) => {
-    socket.to(`role_sales_admin`).emit('order_update', {
-      order_id: data.order_id,
+  socket.on('task_status_update', (data) => {
+    socket.to(`role_sales_admin`).emit('task_update', {
+      task_id: data.task_id,
       status: data.status,
       salesperson_id: socket.user.id,
       timestamp: new Date()
     });
+  });
+
+  socket.on('join_room', (room) => {
+    socket.join(room);
+  });
+
+  socket.on('leave_room', (room) => {
+    socket.leave(room);
   });
   
   socket.on('disconnect', () => {
