@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1",
+    "name": "Alice Johnson",
+    "email": "alice.johnson@company.com",
+    "phone": "+1-555-0201",
+    "region": "Downtown",
+    "status": "active",
+    "currentLocation": "Tech District",
+    "totalSales": 374850,
+    "dealsCount": 12,
+    "lastActivity": "2025-07-03T11:55:19.750Z"
+  },
+  {
+    "id": "2",
+    "name": "Bob Smith",
+    "email": "bob.smith@company.com",
+    "phone": "+1-555-0202",
+    "region": "Suburbs",
+    "status": "active",
+    "currentLocation": "Retail Park",
+    "totalSales": 266560,
+    "dealsCount": 8,
+    "lastActivity": "2025-07-03T11:55:19.754Z"
+  },
+  {
+    "id": "3",
+    "name": "Charlie Brown",
+    "email": "charlie.brown@company.com",
+    "phone": "+1-555-0203",
+    "region": "Industrial",
+    "status": "inactive",
+    "currentLocation": "Office",
+    "totalSales": 233240,
+    "dealsCount": 7,
+    "lastActivity": "2024-01-14T09:15:00Z"
+  }
+]

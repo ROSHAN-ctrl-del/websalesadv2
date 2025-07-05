@@ -1,0 +1,102 @@
+{
+  "stockItems": [
+    {
+      "id": "1",
+      "name": "chilli powder",
+      "category": "spices",
+      "currentStock": 191,
+      "minStock": 20,
+      "maxStock": 500,
+      "unitPrice": 99.99,
+      "totalValue": 19098.09,
+      "lastUpdated": "2025-07-03T10:50:57.365Z",
+      "status": "in_stock"
+    },
+    {
+      "id": "2",
+      "name": "ginger",
+      "category": "spices",
+      "currentStock": 51,
+      "minStock": 50,
+      "maxStock": 200,
+      "unitPrice": 49.99,
+      "totalValue": 2549.4900000000002,
+      "lastUpdated": "2025-07-01T16:56:51.450Z",
+      "status": "in_stock"
+    },
+    {
+      "id": "3",
+      "name": "turmeric",
+      "category": "spices",
+      "currentStock": 12,
+      "minStock": 10,
+      "maxStock": 100,
+      "unitPrice": 89.99,
+      "totalValue": 1079.8799999999999,
+      "lastUpdated": "2025-07-01T16:57:03.273Z",
+      "status": "in_stock"
+    },
+    {
+      "id": "d687",
+      "name": "chilli mix podwer",
+      "category": "spices",
+      "currentStock": 80,
+      "minStock": 10,
+      "maxStock": 12,
+      "unitPrice": 29.96,
+      "totalValue": 2396.8,
+      "status": "in_stock",
+      "lastUpdated": "2025-07-01T07:50:07.207Z"
+    },
+    {
+      "id": "1725",
+      "name": "leo",
+      "category": "oils",
+      "currentStock": 33,
+      "minStock": 33,
+      "maxStock": 88,
+      "unitPrice": 55,
+      "totalValue": 1815,
+      "status": "low_stock",
+      "lastUpdated": "2025-07-04T11:29:18.117Z"
+    }
+  ],
+  "team-members": [
+    {
+      "id": "1",
+      "name": "Alice Johnson",
+      "email": "alice.johnson@company.com",
+      "phone": "+1-555-0201",
+      "region": "Downtown",
+      "status": "active",
+      "currentLocation": "Tech District",
+      "totalSales": 374850,
+      "dealsCount": 12,
+      "lastActivity": "2025-07-03T11:55:19.750Z"
+    },
+    {
+      "id": "2",
+      "name": "Bob Smith",
+      "email": "bob.smith@company.com",
+      "phone": "+1-555-0202",
+      "region": "Suburbs",
+      "status": "active",
+      "currentLocation": "Retail Park",
+      "totalSales": 266560,
+      "dealsCount": 8,
+      "lastActivity": "2025-07-03T11:55:19.754Z"
+    },
+    {
+      "id": "3",
+      "name": "Charlie Brown",
+      "email": "charlie.brown@company.com",
+      "phone": "+1-555-0203",
+      "region": "Industrial",
+      "status": "inactive",
+      "currentLocation": "Office",
+      "totalSales": 233240,
+      "dealsCount": 7,
+      "lastActivity": "2024-01-14T09:15:00Z"
+    }
+  ]
+}
