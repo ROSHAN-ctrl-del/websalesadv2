@@ -237,9 +237,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               >
                 <Menu size={24} />
               </button>
-              <h1 className="ml-2 text-lg font-medium text-gray-900">
-                {navItems.find((item) => item.path === location.pathname)?.label || 'Dashboard'}
-              </h1>
+              <div className="ml-2">
+                <h1 className="text-lg font-medium text-gray-900">
+                  {navItems.find((item) => item.path === location.pathname)?.label || 'Dashboard'}
+                </h1>
+                <p className="text-sm text-gray-500">
+                  Welcome back, {user?.name?.split(' ')[0] || 'User'}!
+                </p>
+              </div>
             </div>
             
             <div className="flex items-center space-x-4">

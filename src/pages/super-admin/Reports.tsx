@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Layout from '../../components/Layout';
-import { Download, Calendar, Filter, TrendingUp, Users, Package, DollarSign } from 'lucide-react';
+import { Download, Calendar, Filter, TrendingUp, Users, Package, DollarSign, FileText, FileSpreadsheet } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { exportToCSV, exportToExcel, exportToPDF, ReportData } from '../../utils/reportExporter';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,7 +31,7 @@ ChartJS.register(
 const SuperAdminReports = () => {
   const [dateRange, setDateRange] = useState('30days');
 
-  // Sample data for charts
+  // Sample data for charts and reports
   const salesData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
@@ -75,6 +76,79 @@ const SuperAdminReports = () => {
     ],
   };
 
+  // Report data for export
+  const salesReportData: ReportData = {
+    title: 'Sales Report',
+    columns: ['Month', 'Revenue', 'Orders', 'Growth'],
+    data: [
+      { Month: 'January', Revenue: '₹12,00,000', Orders: 145, Growth: '+12%' },
+      { Month: 'February', Revenue: '₹19,00,000', Orders: 189, Growth: '+58%' },
+      { Month: 'March', Revenue: '₹15,00,000', Orders: 156, Growth: '-21%' },
+      { Month: 'April', Revenue: '₹25,00,000', Orders: 234, Growth: '+67%' },
+      { Month: 'May', Revenue: '₹22,00,000', Orders: 198, Growth: '-12%' },
+      { Month: 'June', Revenue: '₹30,00,000', Orders: 267, Growth: '+36%' },
+    ],
+    summary: {
+      'Total Revenue': '₹1,23,00,000',
+      'Total Orders': 1189,
+      'Average Growth': '+23%',
+      'Best Month': 'June',
+      'Generated On': new Date().toLocaleDateString()
+    }
+  };
+
+  const inventoryReportData: ReportData = {
+    title: 'Inventory Report',
+    columns: ['Product', 'Category', 'Stock', 'Value', 'Status'],
+    data: [
+      { Product: 'Wireless Headphones', Category: 'Electronics', Stock: 150, Value: '₹14,99,850', Status: 'In Stock' },
+      { Product: 'Smartphone Case', Category: 'Accessories', Stock: 15, Value: '₹3,74,850', Status: 'Low Stock' },
+      { Product: 'Laptop Stand', Category: 'Office Supplies', Stock: 0, Value: '₹0', Status: 'Out of Stock' },
+      { Product: 'USB Cable', Category: 'Electronics', Stock: 75, Value: '₹1,87,425', Status: 'In Stock' },
+      { Product: 'Mouse Pad', Category: 'Accessories', Stock: 8, Value: '₹1,99,920', Status: 'Low Stock' },
+    ],
+    summary: {
+      'Total Products': 5,
+      'Total Value': '₹22,62,045',
+      'Low Stock Items': 2,
+      'Out of Stock Items': 1,
+      'Generated On': new Date().toLocaleDateString()
+    }
+  };
+
+  const userActivityReportData: ReportData = {
+    title: 'User Activity Report',
+    columns: ['User', 'Role', 'Last Login', 'Actions', 'Status'],
+    data: [
+      { User: 'Alice Johnson', Role: 'Sales Person', 'Last Login': '2024-01-15', Actions: 45, Status: 'Active' },
+      { User: 'Bob Smith', Role: 'Sales Person', 'Last Login': '2024-01-14', Actions: 32, Status: 'Active' },
+      { User: 'Charlie Brown', Role: 'Sales Person', 'Last Login': '2024-01-10', Actions: 18, Status: 'Inactive' },
+      { User: 'Diana Prince', Role: 'Sales Admin', 'Last Login': '2024-01-15', Actions: 67, Status: 'Active' },
+      { User: 'Eve Wilson', Role: 'Sales Admin', 'Last Login': '2024-01-13', Actions: 23, Status: 'Active' },
+    ],
+    summary: {
+      'Total Users': 5,
+      'Active Users': 4,
+      'Inactive Users': 1,
+      'Total Actions': 185,
+      'Generated On': new Date().toLocaleDateString()
+    }
+  };
+
+  const handleExport = (reportData: ReportData, format: 'csv' | 'excel' | 'pdf') => {
+    switch (format) {
+      case 'csv':
+        exportToCSV(reportData);
+        break;
+      case 'excel':
+        exportToExcel(reportData);
+        break;
+      case 'pdf':
+        exportToPDF(reportData);
+        break;
+    }
+  };
+
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -108,9 +182,7 @@ const SuperAdminReports = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
-            {/* Hidden for now
             <p className="text-gray-600 mt-1">Comprehensive system reports and data insights</p>
-            */}
           </div>
           <div className="flex items-center space-x-3 mt-4 sm:mt-0">
             <select
@@ -123,10 +195,6 @@ const SuperAdminReports = () => {
               <option value="90days">Last 3 months</option>
               <option value="1year">Last year</option>
             </select>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-blue-700 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </button>
           </div>
         </div>
 
@@ -235,20 +303,94 @@ const SuperAdminReports = () => {
 
         {/* Export Options */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Reports</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              Sales Report (CSV)
-            </button>
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              Inventory Report (Excel)
-            </button>
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              User Activity (PDF)
-            </button>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Download Reports</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Sales Report */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Sales Report</h4>
+              <p className="text-sm text-gray-600 mb-4">Monthly sales performance and trends</p>
+              <div className="flex flex-col space-y-2">
+                <button 
+                  onClick={() => handleExport(salesReportData, 'csv')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download CSV
+                </button>
+                <button 
+                  onClick={() => handleExport(salesReportData, 'excel')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Download Excel
+                </button>
+                <button 
+                  onClick={() => handleExport(salesReportData, 'pdf')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Inventory Report */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Inventory Report</h4>
+              <p className="text-sm text-gray-600 mb-4">Stock levels and product status</p>
+              <div className="flex flex-col space-y-2">
+                <button 
+                  onClick={() => handleExport(inventoryReportData, 'csv')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download CSV
+                </button>
+                <button 
+                  onClick={() => handleExport(inventoryReportData, 'excel')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Download Excel
+                </button>
+                <button 
+                  onClick={() => handleExport(inventoryReportData, 'pdf')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            {/* User Activity Report */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">User Activity Report</h4>
+              <p className="text-sm text-gray-600 mb-4">User engagement and activity logs</p>
+              <div className="flex flex-col space-y-2">
+                <button 
+                  onClick={() => handleExport(userActivityReportData, 'csv')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download CSV
+                </button>
+                <button 
+                  onClick={() => handleExport(userActivityReportData, 'excel')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Download Excel
+                </button>
+                <button 
+                  onClick={() => handleExport(userActivityReportData, 'pdf')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

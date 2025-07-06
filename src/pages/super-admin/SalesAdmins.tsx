@@ -261,9 +261,7 @@ const SuperAdminSalesAdmins = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Sales Admins</h1>
-            {/* Hidden for now
             <p className="text-gray-600 mt-1">Manage your sales administration team</p>
-            */}
           </div>
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -481,10 +479,10 @@ const SuperAdminSalesAdmins = () => {
 
         {/* Add Modal */}
         {showAddModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-            <div className="bg-white rounded-lg p-4 w-full max-w-lg mx-auto">
-              <div className="flex justify-between items-center mb-2">
-                <h2 className="text-lg font-bold">
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-bold">
                   {editingAdmin ? 'Edit Sales Admin' : 'Add New Sales Admin'}
                 </h2>
                 <button
@@ -498,131 +496,149 @@ const SuperAdminSalesAdmins = () => {
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <form className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2" onSubmit={handleSubmit}>
-                <div className="flex flex-col">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={newAdmin.name}
-                    onChange={handleInputChange}
-                    className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    placeholder="Enter full name"
-                    required
-                  />
-                  {formErrors.name && (
-                    <p className="mt-1 text-xs text-red-600">{formErrors.name}</p>
-                  )}
-                </div>
-                <div className="flex flex-col">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={newAdmin.email}
-                    onChange={handleInputChange}
-                    className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    placeholder="Enter email address"
-                    required
-                  />
-                  {formErrors.email && (
-                    <p className="mt-1 text-xs text-red-600">{formErrors.email}</p>
-                  )}
-                </div>
-                <div className="flex flex-col">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Phone Number</label>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={newAdmin.phone}
-                    onChange={handleInputChange}
-                    className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    placeholder="Enter phone number"
-                    required
-                  />
-                  {formErrors.phone && (
-                    <p className="mt-1 text-xs text-red-600">{formErrors.phone}</p>
-                  )}
-                </div>
-                <div className="flex flex-col">
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Region</label>
-                  <select
-                    name="region"
-                    value={newAdmin.region}
-                    onChange={handleInputChange}
-                    className="px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                    required
-                  >
-                    <option value="">Select a region</option>
-                    <option value="North Region">North Region</option>
-                    <option value="South Region">South Region</option>
-                    <option value="East Region">East Region</option>
-                    <option value="West Region">West Region</option>
-                  </select>
-                  {formErrors.region && (
-                    <p className="mt-1 text-xs text-red-600">{formErrors.region}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Password
-                  </label>
-                  <div className="relative">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name *
+                    </label>
                     <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="password"
-                      value={newAdmin.password}
+                      type="text"
+                      name="name"
+                      value={newAdmin.name}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                      placeholder="Enter password"
-                      required={!editingAdmin}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter full name"
+                      required
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
-                      )}
-                    </button>
+                    {formErrors.name && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
+                    )}
                   </div>
-                  {formErrors.password && (
-                    <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
-                  )}
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={newAdmin.email}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter email address"
+                      required
+                    />
+                    {formErrors.email && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>
+                    )}
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Phone Number *
+                    </label>
                     <input
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      name="confirmPassword"
-                      value={newAdmin.confirmPassword}
+                      type="tel"
+                      name="phone"
+                      value={newAdmin.phone}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                      placeholder="Confirm password"
-                      required={!editingAdmin}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Enter phone number"
+                      required
                     />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-gray-400" />
-                      )}
-                    </button>
+                    {formErrors.phone && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.phone}</p>
+                    )}
                   </div>
-                  {formErrors.confirmPassword && (
-                    <p className="mt-1 text-sm text-red-600">{formErrors.confirmPassword}</p>
-                  )}
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Region *
+                    </label>
+                    <select
+                      name="region"
+                      value={newAdmin.region}
+                      onChange={handleInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      required
+                    >
+                      <option value="">Select a region</option>
+                      <option value="North Region">North Region</option>
+                      <option value="South Region">South Region</option>
+                      <option value="East Region">East Region</option>
+                      <option value="West Region">West Region</option>
+                    </select>
+                    {formErrors.region && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.region}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Password {!editingAdmin && '*'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={newAdmin.password}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                        placeholder={editingAdmin ? "Leave blank to keep current" : "Enter password"}
+                        required={!editingAdmin}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {formErrors.password && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Confirm Password {!editingAdmin && '*'}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        value={newAdmin.confirmPassword}
+                        onChange={handleInputChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                        placeholder="Confirm password"
+                        required={!editingAdmin}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {formErrors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-600">{formErrors.confirmPassword}</p>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex justify-end space-x-3 pt-4">
@@ -639,27 +655,21 @@ const SuperAdminSalesAdmins = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`flex items-center justify-center gap-2 px-3 py-1.5 rounded font-semibold shadow-sm text-xs transition-all duration-150
+                    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium shadow-sm transition-all duration-150
                       ${isSubmitting
                         ? 'bg-blue-300 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-blue-500 to-blue-700 hover:from-blue-600 hover:to-blue-800'}
-                      text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 min-w-[120px]`}
+                        : 'bg-blue-600 hover:bg-blue-700'}
+                      text-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 min-w-[140px]`}
                   >
                     {isSubmitting ? (
                       <>
-                        <svg className="animate-spin h-3 w-3 mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                        <svg className="animate-spin h-4 w-4 mr-2 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
                         Saving...
                       </>
                     ) : editingAdmin ? (
-                      <>
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                        Update Admin
-                      </>
+                      'Update Admin'
                     ) : (
-                      <>
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                        Add Sales Admin
-                      </>
+                      'Add Sales Admin'
                     )}
                   </button>
                 </div>

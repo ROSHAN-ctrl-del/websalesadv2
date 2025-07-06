@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Layout from '../../components/Layout';
-import { Download, Calendar, TrendingUp, Users, Target, Award } from 'lucide-react';
+import { Download, Calendar, TrendingUp, Users, Target, Award, FileText, FileSpreadsheet } from 'lucide-react';
 import { Line, Bar, Doughnut } from 'react-chartjs-2';
+import { exportToCSV, exportToExcel, exportToPDF, ReportData } from '../../utils/reportExporter';
 
 const SalesAdminReports = () => {
   const [dateRange, setDateRange] = useState('30days');
@@ -46,6 +47,78 @@ const SalesAdminReports = () => {
     ],
   };
 
+  // Report data for export
+  const teamPerformanceReportData: ReportData = {
+    title: 'Team Performance Report',
+    columns: ['Name', 'Region', 'Sales', 'Deals', 'Growth', 'Status'],
+    data: [
+      { Name: 'Alice Johnson', Region: 'Downtown', Sales: '₹3,74,850', Deals: 12, Growth: '+23%', Status: 'Active' },
+      { Name: 'Bob Smith', Region: 'Suburbs', Sales: '₹2,66,560', Deals: 8, Growth: '+15%', Status: 'Active' },
+      { Name: 'Charlie Brown', Region: 'Industrial', Sales: '₹2,33,240', Deals: 7, Growth: '+12%', Status: 'Inactive' },
+      { Name: 'Diana Prince', Region: 'Retail', Sales: '₹3,16,540', Deals: 10, Growth: '+18%', Status: 'Active' },
+      { Name: 'Eve Wilson', Region: 'Downtown', Sales: '₹2,41,570', Deals: 6, Growth: '+8%', Status: 'Active' },
+    ],
+    summary: {
+      'Total Team Sales': '₹14,32,760',
+      'Total Deals': 43,
+      'Average Growth': '+15.2%',
+      'Active Members': 4,
+      'Generated On': new Date().toLocaleDateString()
+    }
+  };
+
+  const customerReportData: ReportData = {
+    title: 'Customer Report',
+    columns: ['Customer', 'Company', 'Region', 'Orders', 'Revenue', 'Status'],
+    data: [
+      { Customer: 'John Doe', Company: 'TechCorp Solutions', Region: 'Downtown', Orders: 15, Revenue: '₹25,000', Status: 'Active' },
+      { Customer: 'Sarah Wilson', Company: 'RetailMax Inc', Region: 'Suburbs', Orders: 8, Revenue: '₹12,000', Status: 'Active' },
+      { Customer: 'Mike Chen', Company: 'StartupXYZ', Region: 'Industrial', Orders: 0, Revenue: '₹0', Status: 'Potential' },
+      { Customer: 'Lisa Brown', Company: 'Global Corp', Region: 'Retail', Orders: 22, Revenue: '₹35,000', Status: 'Active' },
+      { Customer: 'David Lee', Company: 'Tech Innovations', Region: 'Downtown', Orders: 5, Revenue: '₹8,500', Status: 'Active' },
+    ],
+    summary: {
+      'Total Customers': 5,
+      'Active Customers': 4,
+      'Total Orders': 50,
+      'Total Revenue': '₹80,500',
+      'Generated On': new Date().toLocaleDateString()
+    }
+  };
+
+  const activityReportData: ReportData = {
+    title: 'Team Activity Report',
+    columns: ['Date', 'Member', 'Activity', 'Details', 'Result'],
+    data: [
+      { Date: '2024-01-15', Member: 'Alice Johnson', Activity: 'Customer Visit', Details: 'TechCorp Solutions', Result: 'Deal Closed' },
+      { Date: '2024-01-15', Member: 'Bob Smith', Activity: 'Product Demo', Details: 'RetailMax Inc', Result: 'Follow-up Scheduled' },
+      { Date: '2024-01-14', Member: 'Diana Prince', Activity: 'Cold Call', Details: 'New Prospect', Result: 'Meeting Scheduled' },
+      { Date: '2024-01-14', Member: 'Alice Johnson', Activity: 'Order Processing', Details: 'Order #12345', Result: 'Completed' },
+      { Date: '2024-01-13', Member: 'Eve Wilson', Activity: 'Customer Support', Details: 'Issue Resolution', Result: 'Resolved' },
+    ],
+    summary: {
+      'Total Activities': 5,
+      'Deals Closed': 1,
+      'Meetings Scheduled': 1,
+      'Follow-ups': 1,
+      'Generated On': new Date().toLocaleDateString()
+    }
+  };
+
+  const handleExport = (reportData: ReportData, format: 'csv' | 'excel' | 'pdf') => {
+    switch (format) {
+      case 'csv':
+        exportToCSV(reportData);
+        break;
+      case 'excel':
+        exportToExcel(reportData);
+        break;
+      case 'pdf':
+        exportToPDF(reportData);
+        break;
+    }
+  };
+
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -88,10 +161,6 @@ const SalesAdminReports = () => {
               <option value="30days">Last 30 days</option>
               <option value="90days">Last 3 months</option>
             </select>
-            <button className="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center hover:bg-green-700 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              Export
-            </button>
           </div>
         </div>
 
@@ -208,20 +277,94 @@ const SalesAdminReports = () => {
 
         {/* Export Options */}
         <div className="bg-white rounded-lg p-6 shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Export Team Reports</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              Team Performance (CSV)
-            </button>
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              Customer Report (Excel)
-            </button>
-            <button className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <Download className="h-4 w-4 mr-2" />
-              Activity Summary (PDF)
-            </button>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Download Team Reports</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Team Performance Report */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Team Performance</h4>
+              <p className="text-sm text-gray-600 mb-4">Individual sales performance and metrics</p>
+              <div className="flex flex-col space-y-2">
+                <button 
+                  onClick={() => handleExport(teamPerformanceReportData, 'csv')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download CSV
+                </button>
+                <button 
+                  onClick={() => handleExport(teamPerformanceReportData, 'excel')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Download Excel
+                </button>
+                <button 
+                  onClick={() => handleExport(teamPerformanceReportData, 'pdf')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Customer Report */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Customer Report</h4>
+              <p className="text-sm text-gray-600 mb-4">Customer engagement and order history</p>
+              <div className="flex flex-col space-y-2">
+                <button 
+                  onClick={() => handleExport(customerReportData, 'csv')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download CSV
+                </button>
+                <button 
+                  onClick={() => handleExport(customerReportData, 'excel')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Download Excel
+                </button>
+                <button 
+                  onClick={() => handleExport(customerReportData, 'pdf')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Activity Summary */}
+            <div className="border border-gray-200 rounded-lg p-4">
+              <h4 className="font-medium text-gray-900 mb-2">Activity Summary</h4>
+              <p className="text-sm text-gray-600 mb-4">Team activities and task completion</p>
+              <div className="flex flex-col space-y-2">
+                <button 
+                  onClick={() => handleExport(activityReportData, 'csv')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Download CSV
+                </button>
+                <button 
+                  onClick={() => handleExport(activityReportData, 'excel')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <FileSpreadsheet className="h-4 w-4 mr-2" />
+                  Download Excel
+                </button>
+                <button 
+                  onClick={() => handleExport(activityReportData, 'pdf')}
+                  className="flex items-center justify-center px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

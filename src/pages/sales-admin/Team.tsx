@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../../components/Layout';
-import { Plus, Search, MapPin, Phone, Mail, MoreVertical, Edit, Trash2, X, Loader2 } from 'lucide-react';
+import { Plus, Search, MapPin, Phone, Mail, MoreVertical, Edit, Trash2, X, Loader2, Eye, EyeOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 import { 
@@ -19,6 +19,8 @@ interface FormData {
   email: string;
   phone: string;
   region: string;
+  password: string;
+  confirmPassword: string;
 }
 
 interface FormErrors {
@@ -26,6 +28,8 @@ interface FormErrors {
   email?: string;
   phone?: string;
   region?: string;
+  password?: string;
+  confirmPassword?: string;
 }
 
 const SalesAdminTeam = () => {
@@ -36,12 +40,16 @@ const SalesAdminTeam = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showMenuId, setShowMenuId] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
     phone: '',
-    region: ''
+    region: '',
+    password: '',
+    confirmPassword: ''
   });
   
   const [errors, setErrors] = useState<FormErrors>({});
@@ -109,6 +117,28 @@ const SalesAdminTeam = () => {
     if (!formData.region) {
       newErrors.region = 'Region is required';
     }
+
+    // Password validation (required for new users, optional for editing)
+    if (!editingId) {
+      if (!formData.password) {
+        newErrors.password = 'Password is required';
+      } else if (formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+    } else if (formData.password) {
+      // If editing and password is provided, validate it
+      if (formData.password.length < 6) {
+        newErrors.password = 'Password must be at least 6 characters';
+      }
+      
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -125,10 +155,20 @@ const SalesAdminTeam = () => {
     try {
       if (editingId) {
         // Update existing team member
-        const updatedMember = await updateTeamMember(editingId, {
-          ...formData,
+        const updateData: any = {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          region: formData.region,
           lastActivity: new Date().toISOString()
-        });
+        };
+
+        // Only include password if it's provided
+        if (formData.password) {
+          updateData.password = formData.password;
+        }
+
+        const updatedMember = await updateTeamMember(editingId, updateData);
         
         setSalesPersons(prev => 
           prev.map(person => 
@@ -139,7 +179,11 @@ const SalesAdminTeam = () => {
       } else {
         // Add new team member
         const newMember = await addTeamMember({
-          ...formData,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          region: formData.region,
+          password: formData.password,
           status: 'active',
           currentLocation: 'Office',
           totalSales: 0,
@@ -167,10 +211,14 @@ const SalesAdminTeam = () => {
       name: '',
       email: '',
       phone: '',
-      region: ''
+      region: '',
+      password: '',
+      confirmPassword: ''
     });
     setErrors({});
     setEditingId(null);
+    setShowPassword(false);
+    setShowConfirmPassword(false);
   };
 
   // Handle edit
@@ -179,7 +227,9 @@ const SalesAdminTeam = () => {
       name: person.name,
       email: person.email,
       phone: person.phone,
-      region: person.region
+      region: person.region,
+      password: '',
+      confirmPassword: ''
     });
     setEditingId(person.id);
     setShowModal(true);
@@ -515,6 +565,73 @@ const SalesAdminTeam = () => {
                     </select>
                     {errors.region && (
                       <p className="mt-1 text-sm text-red-600">{errors.region}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Password {!editingId && <span className="text-red-500">*</span>}
+                      {editingId && <span className="text-gray-500 text-xs">(Leave blank to keep current)</span>}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border ${
+                          errors.password ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-10`}
+                        placeholder={editingId ? "Leave blank to keep current" : "Enter password"}
+                        disabled={isSubmitting}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.password && (
+                      <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Confirm Password {!editingId && <span className="text-red-500">*</span>}
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        name="confirmPassword"
+                        value={formData.confirmPassword}
+                        onChange={handleInputChange}
+                        className={`w-full px-3 py-2 border ${
+                          errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                        } rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent pr-10`}
+                        placeholder="Confirm password"
+                        disabled={isSubmitting}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
                     )}
                   </div>
                   
